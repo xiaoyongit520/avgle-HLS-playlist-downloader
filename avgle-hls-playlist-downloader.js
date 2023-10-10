@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         avgle HLS playlist downloader
 // @namespace    https://avgle.com/
-// @version      0.1.9
+// @version      0.2.0
 // @description  decrypts and downloads avgle HLS playlist in browser
 // @author       avotoko by edit ken
 // @match        https://avgle.com/*
@@ -9,7 +9,7 @@
 
 (function () {
     "use strict";
-    let d = document, ver = "v.0.1.9";
+    let d = document, ver = "v.0.2.0";
 
     function info(msg) {
         let e = d.querySelector('div.ahpd-info');
@@ -50,6 +50,7 @@
             method: 'post',
             mode: 'cors',
             headers: {
+                'Access-Control-Allow-Origin':'*',
                 'Content-Type': 'application/json;charset=utf-8'
             },
             body: JSON.stringify({m3u8: playlist, fileName: filename})
