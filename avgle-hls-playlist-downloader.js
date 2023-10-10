@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         avgle HLS playlist downloader
 // @namespace    https://avgle.com/
-// @version      0.2.0
+// @version      0.2.1
 // @description  decrypts and downloads avgle HLS playlist in browser
 // @author       avotoko by edit ken
 // @match        https://avgle.com/*
@@ -9,7 +9,7 @@
 
 (function () {
     "use strict";
-    let d = document, ver = "v.0.2.0";
+    let d = document, ver = "v.0.2.1";
 
     function info(msg) {
         let e = d.querySelector('div.ahpd-info');
@@ -39,35 +39,32 @@
             let r = avglehpdPreDownload({playlist});
             filename = (r && r.filename) || filename;
         }
-        // let a = d.querySelector('.ahpd-download');
-        /*		a.href = URL.createObjectURL(new Blob([playlist], { type: "application/x-mpegURL" }));
-                a.setAttribute("download", filename);
-                a.classList.remove("ahpd-hide");*/
-        // 实例化一个Request实例
-// 第一个参数一般指资源路径
-// 第二个参数可以理解为请求的配置项，包含头部信息和http请求一些关键配置（请求类型、参数...）
+        let a = d.querySelector('.ahpd-download');
+        a.classList.remove("ahpd-hide");
+        a.addEventListener('click', function (e) {
+            callApiDownload().then(r => {
+                console.log(r)
+            }).catch(e => {
+                console.log(e)
+            })
+        })
+        // a.href = URL.createObjectURL(new Blob([playlist], { type: "application/x-mpegURL" }));
+        // a.setAttribute("download", filename);
+
+
+    }
+
+    function callApiDownload() {
         let requestInstance = new Request('http://127.0.0.1:3800/', {
             method: 'post',
             mode: 'cors',
             headers: {
-                'Access-Control-Allow-Origin':'*',
+                'Access-Control-Allow-Origin': '*',
                 'Content-Type': 'application/json;charset=utf-8'
             },
             body: JSON.stringify({m3u8: playlist, fileName: filename})
         });
-// fetch方法参数同Request实例
-// 第一个参数为url或者Request实例
-// 第二个参数为请求配置项
-        fetch(requestInstance).then(response => {
-            // 返回的是一个Response的实例
-            // 调用Response实例的序列化方法，序列化成json,返回值是一个promise
-            // 序列化方法有 json,text,formData,blob,arrayBuffer,redirct
-            let result = response.json()
-            result.then(res => {
-                consolee.log(res)
-            })
-        })
-
+        return fetch(requestInstance);
     }
 
     function isSegmentUriEncrypted(playlist) {
