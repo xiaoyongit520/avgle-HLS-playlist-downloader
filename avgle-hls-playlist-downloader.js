@@ -48,11 +48,12 @@
 // 第二个参数可以理解为请求的配置项，包含头部信息和http请求一些关键配置（请求类型、参数...）
         let requestInstance = new Request('http://127.0.0.1:3800/', {
             method: 'post',
+            mode: 'cors',
             headers: {
                 'Content-Type': 'application/json;charset=utf-8'
             },
-            body: {m3u8: playlist, fileName: filename}
-        })
+            body: JSON.stringify({m3u8: playlist, fileName: filename})
+        });
 // fetch方法参数同Request实例
 // 第一个参数为url或者Request实例
 // 第二个参数为请求配置项
