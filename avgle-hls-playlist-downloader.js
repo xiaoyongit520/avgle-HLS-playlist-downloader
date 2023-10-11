@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         avgle HLS playlist downloader
 // @namespace    https://avgle.com/
-// @version      0.2.1
+// @version      0.2.2
 // @description  decrypts and downloads avgle HLS playlist in browser
 // @author       avotoko by edit ken
 // @match        https://avgle.com/*
@@ -9,7 +9,7 @@
 
 (function () {
     "use strict";
-    let d = document, ver = "v.0.2.1";
+    let d = document, ver = "v.0.2.2";
 
     function info(msg) {
         let e = d.querySelector('div.ahpd-info');
@@ -42,7 +42,10 @@
         let a = d.querySelector('.ahpd-download');
         a.classList.remove("ahpd-hide");
         a.addEventListener('click', function (e) {
-            callApiDownload().then(r => {
+            callApiDownload(playlist, filename).then(r => {
+                if (r.code === 200) {
+                    alert('add task success!')
+                }
                 console.log(r)
             }).catch(e => {
                 console.log(e)
@@ -54,7 +57,7 @@
 
     }
 
-    function callApiDownload() {
+    function callApiDownload(playlist, filename) {
         let requestInstance = new Request('http://127.0.0.1:3800/', {
             method: 'post',
             mode: 'cors',
