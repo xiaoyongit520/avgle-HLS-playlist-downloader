@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         avgle HLS playlist downloader
 // @namespace    https://avgle.com/
-// @version      0.2.2
+// @version      0.2.4
 // @description  decrypts and downloads avgle HLS playlist in browser
 // @author       avotoko by edit ken
 // @match        https://avgle.com/*
@@ -9,7 +9,7 @@
 
 (function () {
     "use strict";
-    let d = document, ver = "v.0.2.2";
+    let d = document, ver = "v.0.2.4";
 
     function info(msg) {
         let e = d.querySelector('div.ahpd-info');
@@ -41,9 +41,11 @@
         }
         let a = d.querySelector('.ahpd-download');
         a.classList.remove("ahpd-hide");
+        // a.href = URL.createObjectURL(new Blob([playlist], {type: "application/x-mpegURL"}));
+        // a.setAttribute("download", filename);
         a.addEventListener('click', function (e) {
             callApiDownload(playlist, filename).then(r => {
-                if (r.code === 200) {
+                if (r.status === 200) {
                     alert('add task success!')
                 }
                 console.log(r)
@@ -51,14 +53,10 @@
                 console.log(e)
             })
         })
-        // a.href = URL.createObjectURL(new Blob([playlist], { type: "application/x-mpegURL" }));
-        // a.setAttribute("download", filename);
-
-
     }
 
     function callApiDownload(playlist, filename) {
-        let requestInstance = new Request('http://127.0.0.1:3800/', {
+        let requestInstance = new Request('http://127.0.0.1:3800/download-avgle', {
             method: 'post',
             mode: 'cors',
             headers: {
@@ -127,27 +125,34 @@
         });
 
         function clipboardWrite(value) {
-            window.navigator.clipboard.writeText(value)
-                .then(() => {
-                    console.log('Text copied to clipboard');
-                })
-                .catch(err => {
-                    // This can happen if the user denies clipboard permissions:
-                    console.error('Could not copy text: ', err);
-                });
-        };
-
+            // window.navigator.clipboard.writeText(value)
+            //     .then(() => {
+            //         console.log('Text copied to clipboard');
+            //     })
+            //     .catch(err => {
+            //         // This can happen if the user denies clipboard permissions:
+            //         console.error('Could not copy text: ', err);
+            //     });
+        }
         function getVideoTitle() {
             let title = 'avgle';
             title = decodeURI(window.location.pathname);
             title = title.replace('/video/', '');
-            title = title.replaceAll('/', '-');
             title = title.replace(/\s*/g, '');
+            let titleArr = title.split("/");
+            if (titleArr.length === 2) {
+                title = titleArr[1] + '-' + titleArr[0]
+            } else {
+                title = 'avgle';
+            }
+
+            // title = title.replaceAll('/', '-');
+
             log(title);
             return title;
 
-        };
-        log(getVideoTitle());
+        }
+        // log(getVideoTitle());
         let prevBeforeRequest = videojs.Hls.xhr.beforeRequest;
 
         function restoreBeforeRequest() {
@@ -209,7 +214,8 @@
 
     try {
         if (d.querySelector(".ahpd-area")) {
-            alert("avgleHPD already executed");
+            // alert("avgleHPD already executed");
+            console.log("avgleHPD already executed");
             return;
         }
         log("avgle HLS playlist downloader " + ver);
@@ -219,10 +225,51 @@
             let s, e, sel = "div.container > div.row";
             if (!(e = d.querySelector(sel))) {
                 log("element '" + sel + "' not found");
-                alert("avgleHPD error: " + "element '" + sel + "' not found");
+                console.log("avgleHPD error: " + "element '" + sel + "' not found");
+                // alert("avgleHPD error: " + "element '" + sel + "' not found");
                 return;
             }
-            appendStylesheet(".ahpd-area{display:flex; font-size:large; }.ahpd-ver{margin-right:5px; background-color:gold; font-weight:bold; text-align:center; vertical-align:middle; border:1px solid transparent; padding:8px 12px; width:min-content; white-space:nowrap; border-radius:4px; }.ahpd-info{margin-right:5px; background-color:beige; text-align:center; border:1px solid transparent; padding:8px 12px; width:min-content; white-space:nowrap; font-size:large; border-radius:4px; }.ahpd-download{font-weight:bold; padding:8px 12px; }.ahpd-download:hover{border:1px outset transparent; } .ahpd-hide{display:none;}");
+            let styleText = `
+                .ahpd-area{
+                    display:flex; font-size:large; 
+                }
+                .ahpd-ver{
+                    margin-right:5px; 
+                    background-color:gold; 
+                    font-weight:bold; 
+                    text-align:center; 
+                    vertical-align:middle; 
+                    border:1px solid transparent; 
+                    padding:8px 12px; 
+                    width:min-content; 
+                    white-space:nowrap; 
+                    border-radius:4px; 
+                }
+                .ahpd-info{
+                    margin-right:5px; 
+                    background-color:beige; 
+                    text-align:center; 
+                    border:1px solid transparent; 
+                    padding:8px 12px; 
+                    width:min-content; 
+                    white-space:nowrap; 
+                    font-size:large; 
+                    border-radius:4px; 
+                }
+                
+                .ahpd-download{
+                    font-weight:bold; 
+                    padding:8px 12px;
+                    cursor: pointer; 
+                }
+                .ahpd-download:hover{
+                    border:1px outset transparent; 
+                } 
+                .ahpd-hide{
+                    display:none;
+                }
+            `;
+            appendStylesheet(styleText);
             let area = e.insertBefore(d.createElement("div"), e.firstElementChild);
             area.className = "ahpd-area";
             e = area.appendChild(d.createElement("div"));
